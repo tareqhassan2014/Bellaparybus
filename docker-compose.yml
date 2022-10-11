@@ -1,0 +1,126 @@
+version: '3.5'
+
+x-common-variables:
+  &common-variables
+  MYSQL_DATABASE: Bellapartybus
+  MYSQL_USER: bella
+  MYSQL_PASSWORD: 67R@-ZcA*c*d9FuG
+
+services:
+  mysql_db:
+    image: mysql
+    restart: always
+    cap_add:
+      - SYS_NICE
+    volumes:
+      - "./setup.sql:/docker-entrypoint-initdb.d/setup.sql"
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      <<: *common-variables
+      MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
+    networks:
+      services-network:
+        aliases:
+          - mysql_db-network
+
+  frontend:
+    container_name: bellapartybus-frontend
+    hostname: frontend
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./frontend:/frontend/
+      - /frontend/node_modules
+    ports:
+      - "3000:80"
+    networks:
+      services-network:
+        aliases:
+          - frontend-network
+
+  admin:
+    container_name: bellapartybus-admin
+    hostname: admin
+    build:
+      context: ./admin
+      dockerfile: ./Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./admin:/admin/
+      - /admin/node_modules
+    ports:
+      - "5000:80"
+    networks:
+      services-network:
+        aliases:
+          - admin-network
+
+  backend:
+    container_name: bellapartybus-backend
+    hostname: backend
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mysql_db
+    volumes:
+      - ./backend:/backend/
+      - /backend/node_modules
+    environment:
+      <<: *common-variables
+      MYSQL_HOST_IP: mysql_db
+    ports:
+      - "3001:3001"
+    networks:
+      services-network:
+        aliases:
+          - backend-network
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql_db
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql_db
+    networks:
+      services-network:
+        aliases:
+          - adminer-network
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: ./Dockerfile
+    hostname: nginx
+    volumes:
+      - ./logs:/var/log/nginx
+      - ./letsencrypt:/etc/letsencrypt
+    links:
+      - frontend:frontend-network
+      - admin:admin-network
+      - backend:backend-network
+      - mysql_db:mysql_db-network
+      - adminer:adminer-network
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: on-failure:5
+    networks:
+      services-network:
+        aliases:
+          - nginx-network
+
+networks:
+  services-network:
+    name: services-network
+    driver: bridge
