@@ -1,15 +1,16 @@
+import { composeWithDevTools } from '@redux-devtools/extension';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
-import { createStore } from 'redux';
+import { applyMiddleware, createStore } from 'redux';
 import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import rootReducer from './store/rooReducer';
 import ScrollToTop from './utils/ScrollToTop';
 
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, composeWithDevTools(applyMiddleware()));
 
 ReactDOM.render(
     <React.StrictMode>

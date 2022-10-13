@@ -9,7 +9,7 @@ const db = require('../../services/db');
 
 const saltRounds = 10;
 
-const adminTable = 'admin';
+const userTable = 'admin_info';
 
 /**
  * Log in Function
@@ -21,12 +21,17 @@ exports.login = (email, password) => {
         const email_lowercased = email.toLowerCase();
         // check if user already exists
         const admin = await db.query(
-            `SELECT * FROM ${adminTable} WHERE email_lowercased = '${email_lowercased}'`
+            `SELECT * FROM ${userTable} WHERE email = '${email}'`
         );
 
         // user doesn't exist
         if (admin.length === 0) {
             reject({ status: 404, message: 'Cannot find the user!' });
+            return;
+        }
+
+        if (admin[0].role !== 'admin') {
+            reject({ status: 403, message: 'You are not an admin!' });
             return;
         }
 
@@ -45,7 +50,7 @@ exports.login = (email, password) => {
                 );
                 resolve({
                     status: 200,
-                    message: 'Successfully loggedin!',
+                    message: 'Successfully logged!',
                     user: {
                         id: admin.id,
                         email: email,
@@ -68,7 +73,7 @@ exports.requestForgotPassword = (email) => {
     return new Promise(async (resolve, reject) => {
         const email_lowercased = email.toLowerCase();
         const admin = await db.query(
-            `SELECT * FROM ${adminTable} WHERE email_lowercased = '${email_lowercased}'`
+            `SELECT * FROM ${userTable} WHERE email_lowercased = '${email_lowercased}'`
         );
 
         // user doesn't exist
@@ -87,7 +92,7 @@ exports.requestForgotPassword = (email) => {
                 .slice(0, 19)
                 .replace('T', ' ');
             const rows = await db.query(
-                `UPDATE ${adminTable} SET password_reset_token = '${password_reset_token}', password_reset_token_expired = '${password_reset_expiration}' WHERE email_lowercased = '${email_lowercased}'`
+                `UPDATE ${userTable} SET password_reset_token = '${password_reset_token}', password_reset_token_expired = '${password_reset_expiration}' WHERE email_lowercased = '${email_lowercased}'`
             );
 
             // send email
@@ -101,6 +106,73 @@ exports.requestForgotPassword = (email) => {
             resolve({
                 status: 200,
                 message: 'Password reset!',
+            });
+        });
+    });
+};
+
+/**
+ * Sign up Function
+ * @param {string} email
+ * @param {string} password
+ * @param {string} Name
+ * @param {string} phone
+ */
+exports.register = (email, password, Name, phone) => {
+    return new Promise(async (resolve, reject) => {
+        // check if user already exists
+        const user_exist = await db.query(
+            `SELECT * FROM ${userTable} WHERE email = '${email}'`
+        );
+
+        // user already exists
+        if (user_exist.length > 0) {
+            reject({
+                status: 409,
+                message:
+                    'This email address is already used. Try a different email address!',
+            });
+            return;
+        }
+        // register a new user
+        bcrypt.hash(password, saltRounds, function (err, hash) {
+            // something went wrong
+            if (err) {
+                reject({ status: 500, message: 'Internal server error ...' });
+                return;
+            }
+
+            crypto.randomBytes(32, async function (ex, buf) {
+                const rows = await db.query(
+                    `INSERT INTO ${userTable} SET email = '${email}', password = '${hash}', name = '${Name}'`
+                );
+
+                const user_id = rows.insertId;
+                const token = jwt.sign(
+                    {
+                        data: email,
+                    },
+                    config.jwtSecret,
+                    { expiresIn: '1d' }
+                );
+
+                // send email
+                await transporter.sendMail({
+                    from: config.donotreply_email,
+                    to: email,
+                    subject: 'Verify your email address',
+                    html: `<strong>Please click this link to verify an email. <a>${process.env.DOMAIN_HOST}/signup/verify-email/${user_id}/${email}</a>`,
+                });
+
+                resolve({
+                    status: 200,
+                    message: 'User has been registered!',
+                    user: {
+                        user_id,
+                        email,
+                        token,
+                    },
+                });
             });
         });
     });

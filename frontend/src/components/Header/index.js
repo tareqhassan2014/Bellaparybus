@@ -13,7 +13,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { styled } from '@mui/material/styles';
 import { createStyles, makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import LogoImg from '../../assets/images/logo_white.png';
 import theme from '../../utils/theme';
@@ -69,9 +69,18 @@ const headersData = [
 
 function Header() {
     const classes = useStyles();
+    const dispatch = useDispatch();
     const { isLoggedIn } = useSelector((state) => ({
         isLoggedIn: !!state.auth.jwt,
     }));
+
+    const logOut = () => {
+        dispatch({ type: 'LOGOUT' });
+        console.log('logout');
+    };
+
+    console.log({ isLoggedIn });
+
     const [state, setState] = useState({
         drawerOpen: false,
     });
@@ -164,7 +173,10 @@ function Header() {
                                     <UserEntry />
                                 ) : (
                                     <Grid item xs="auto">
-                                        <Button variant="contained">
+                                        <Button
+                                            variant="contained"
+                                            onClick={logOut}
+                                        >
                                             Log out
                                         </Button>
                                     </Grid>

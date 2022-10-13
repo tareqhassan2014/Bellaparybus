@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDateString } from '../../../helpers/timeHelpers';
+import { bookingRide } from '../../../services/authServices';
 import { CHANGE_BOOKING_STEP } from '../../../store/actionTypes';
 
 const ConfirmInformation = () => {
@@ -16,6 +17,19 @@ const ConfirmInformation = () => {
             bookingVehicles: state.bookingVehicles,
         })
     );
+
+    const submitBooking = async () => {
+        try {
+            const bookingInfo = {
+                ...vehiclesDetails,
+                ...rideInfo,
+            };
+            await bookingRide(bookingInfo);
+            console.log(rideInfo);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const dispatch = useDispatch();
 
@@ -77,7 +91,7 @@ const ConfirmInformation = () => {
                 <Button
                     variant="contained"
                     color="success"
-                    onClick={() => console.log(bookingVehicles)}
+                    onClick={submitBooking}
                 >
                     Confirm
                 </Button>

@@ -22,3 +22,12 @@ export const sendContactInfo = async (info) => {
     const { data } = await axiosInstance.post('api/contact/create', info);
     return data;
 };
+
+// bookingRide
+export const bookingRide = async (bookingInfo) => {
+    const { data } = await axiosInstance.post(
+        'api/booking/bookingRide',
+        bookingInfo
+    );
+    return data;
+};

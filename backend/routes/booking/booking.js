@@ -23,58 +23,43 @@ exports.getAll = () => {
 
 exports.bookingRide = (request) => {
     return new Promise(async (resolve, reject) => {
-        const {
-            userId,
-            booking_type,
-            first_ride_pickup_date,
-            first_ride_passengers,
-            duration,
-            first_ride_pickup_location,
-            first_ride_drop_off_location,
-            occasion,
-            coupon_code,
-            return_ride_pickup_date,
-            return_ride_passengers,
-            return_ride_pickup_location,
-            return_ride_drop_off_location,
-            first_name,
-            last_name,
-            email,
-            phone,
-            contact_method,
-            vehicle,
-            special_request,
-        } = request.body;
+        const { firstRide, returnRide, ...rest } = request.body;
 
-        const bookingRide = await db.query(
-            `INSERT INTO ${bookingTable}(user_id, booking_type, first_ride_pickup_date, first_ride_passengers, duration, first_ride_pickup_location, first_ride_drop_off_location, occasion, coupon_code, return_ride_pickup_date, return_ride_passengers, return_ride_pickup_location, return_ride_drop_off_location, first_name, last_name, email, phone, contact_method, vehicle, special_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                userId,
-                booking_type,
-                first_ride_pickup_date,
-                first_ride_passengers,
-                duration,
-                first_ride_pickup_location,
-                first_ride_drop_off_location,
-                occasion,
-                coupon_code,
-                return_ride_pickup_date,
-                return_ride_passengers,
-                return_ride_pickup_location,
-                return_ride_drop_off_location,
-                first_name,
-                last_name,
-                email,
-                phone,
-                contact_method,
-                vehicle,
-                special_request,
-            ]
+        // json array
+        const vehicleTypes = JSON.stringify(rest.vehicleTypes);
+        console.log(rest.duration);
+
+        const booking = await db.query(
+            `INSERT INTO ${bookingTable} SET
+            userId = '${1}' , 
+            email = '${rest.email}', 
+            phone = '${rest.phone}',
+            vehicle = '${vehicleTypes}', 
+            occasion = '${rest.occasion}',
+            booking_type = '${rest.type}',
+            duration = '${rest.duration}',
+            coupon_code = '${rest.code}',
+            last_name = '${rest.lastName}',
+            first_name = '${rest.firstName}',
+            pickup_date = '${rest.pickupDate}',
+            special_request = '${rest.specialRequest}',
+            pickup_location = '${rest.pickupLocation}',
+            drop_off_location = '${rest.dropOffLocation}',
+            first_ride_passengers = '${firstRide.passengers}', 
+            first_ride_pickup_date = '${firstRide.pickupDate}', 
+            return_ride_passengers = '${returnRide.passengers}',
+            return_ride_pickup_date = '${returnRide.pickupDate}',
+            first_ride_pickup_location = '${firstRide.pickupLocation}',
+            contact_method = '${rest.isPreferEmail ? 'email' : 'phone'}',
+            return_ride_pickup_location = '${returnRide.pickupLocation}',
+            first_ride_drop_off_location = '${firstRide.dropOffLocation}',
+            return_ride_drop_off_location = '${returnRide.dropOffLocation}'`
         );
 
         resolve({
-            status: 200,
-            message: 'User Account Deleted!',
+            status: 201,
+            message: 'Ride Booked',
+            booking: request.body,
         });
     });
 };
