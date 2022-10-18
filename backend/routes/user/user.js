@@ -263,10 +263,10 @@ exports.forgotPassword = (email) => {
  * @param {string} token
  * @param {string} password
  */
-exports.setForgotPassword = (userId, token, password) => {
+exports.setForgotPassword = (token, password, confirmPassword) => {
     return new Promise(async (resolve, reject) => {
         const user_exist = await db.query(
-            `SELECT password_reset_token FROM ${userTable} WHERE id = '${userId}'`
+            `SELECT * FROM ${userTable} WHERE password_reset_token = '${token}'`
         );
 
         // user doesn't exists
@@ -290,7 +290,7 @@ exports.setForgotPassword = (userId, token, password) => {
 
                 const randomToken = makeid(10);
                 const update_user_password = await db.query(
-                    `UPDATE ${userTable} SET password_reset_token = '${randomToken}', password='${hash}' WHERE id = '${userId}'`
+                    `UPDATE ${userTable} SET password_reset_token = '${randomToken}', password='${hash}' WHERE id = '${user_exist[0].id}'`
                 );
 
                 resolve({

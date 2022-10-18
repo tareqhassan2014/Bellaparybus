@@ -9,7 +9,7 @@ router.get('/', function (request, response) {
         .then((res) => {
             response
                 .status(res.status)
-                .json({ message: res.message, booking: res.booking });
+                .json({ message: res.message, booking: res.bookings });
         })
         .catch((err) => {
             response.status(err.status).json({ message: err.message });

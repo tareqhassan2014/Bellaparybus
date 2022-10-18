@@ -25,6 +25,7 @@ const ConfirmInformation = () => {
                 ...rideInfo,
             };
             await bookingRide(bookingInfo);
+            window.alert('Booking Success');
             console.log(rideInfo);
         } catch (error) {
             console.log(error);

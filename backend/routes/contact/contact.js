@@ -1,4 +1,6 @@
 require('dotenv').config();
+const config = require('../../config/config');
+const transporter = require('../../helpers/mailSender');
 const db = require('../../services/db');
 
 const contactTable = 'contact_form';
@@ -20,7 +22,18 @@ exports.createContact = (name, email, message, phone) => {
             `INSERT INTO contact_form (id, name, email, message, phone) VALUES (NULL, '${name}', '${email}', '${message}', '${phone}')`
         );
 
-        resolve({ status: 201, message: 'Contact created successfully' });
+        // send email
+        await transporter.sendMail({
+            from: email,
+            to: 'info@bellapartybus.com',
+            subject: 'Contact Form',
+            html: `name: ${name} <br> email: ${email} <br> message: ${message} <br> phone: ${phone}`,
+        });
+
+        resolve({
+            status: 201,
+            message: 'your mail sent to info@bellapartybus.com',
+        });
     });
 };
 

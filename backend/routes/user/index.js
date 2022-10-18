@@ -57,10 +57,11 @@ router.post('/forgotPassword', function (request, response) {
         });
 });
 
-router.post('/setForgotPassword', function (request, response) {
-    let { userId, token, password } = request.body;
+router.post('/reset-password/:token', function (request, response) {
+    let { password, confirmPassword } = request.body;
+    let { token } = request.params;
 
-    user.setForgotPassword(userId, token, password)
+    user.setForgotPassword(token, password, confirmPassword)
         .then((res) => {
             response.status(res.status).json({ message: res.message });
         })

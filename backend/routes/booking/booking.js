@@ -9,6 +9,7 @@ const bookingTable = 'booking_info';
 exports.getAll = () => {
     return new Promise(async (resolve, reject) => {
         const bookings = await db.query(`SELECT * FROM ${bookingTable}`);
+        console.log(bookings);
         resolve({
             status: 200,
             message: 'Get All Bookings',
@@ -31,7 +32,7 @@ exports.bookingRide = (request) => {
 
         const booking = await db.query(
             `INSERT INTO ${bookingTable} SET
-            userId = '${1}' , 
+            user_id = '${1}' , 
             email = '${rest.email}', 
             phone = '${rest.phone}',
             vehicle = '${vehicleTypes}', 
@@ -42,11 +43,14 @@ exports.bookingRide = (request) => {
             last_name = '${rest.lastName}',
             first_name = '${rest.firstName}',
             pickup_date = '${rest.pickupDate}',
+            pickup_time = '${rest.pickupTime}',
+            passengers = '${rest.passengers}',
             special_request = '${rest.specialRequest}',
             pickup_location = '${rest.pickupLocation}',
             drop_off_location = '${rest.dropOffLocation}',
             first_ride_passengers = '${firstRide.passengers}', 
             first_ride_pickup_date = '${firstRide.pickupDate}', 
+            first_ride_pickup_time = '${firstRide.pickupTime}',
             return_ride_passengers = '${returnRide.passengers}',
             return_ride_pickup_date = '${returnRide.pickupDate}',
             first_ride_pickup_location = '${firstRide.pickupLocation}',

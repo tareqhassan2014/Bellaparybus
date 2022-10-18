@@ -1,7 +1,7 @@
 import axiosInstance from './axiosInstance';
 
 export const login = async (loginValues) => {
-    const { data } = await axiosInstance.post('user/login', loginValues);
+    const { data } = await axiosInstance.post('/api/user/login', loginValues);
     return data;
 };
 
@@ -14,7 +14,9 @@ export const signUp = async (signUpValues) => {
 };
 
 export const sendForgotPassword = async (email) => {
-    const { data } = await axiosInstance.post('user/forgotPassword', { email });
+    const { data } = await axiosInstance.post('/api/user/forgotPassword', {
+        email,
+    });
     return data;
 };
 
